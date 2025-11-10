@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Books</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f8f5f0;
+            margin: 40px;
+            color: #333;
+        }
+
+        h1 {
+            color: #3b5c3b;
+        }
+
+        .nav {
+            margin-bottom: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            background-color: #3b5c3b;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+        }
+
+        .nav a:hover {
+            background-color: #507f50;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e7efe7;
+            color: #2f4f2f;
+        }
+
+        tr:hover {
+            background-color: #f3f9f3;
+        }
+
+        button {
+            background-color: #3b5c3b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #507f50;
+        }
+
+        a.action {
+            text-decoration: none;
+            color: #2f5e2f;
+            font-weight: 600;
+        }
+
+        a.action:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Books</h1>
+
+<div class="nav">
+    <a th:href="@{/members}">← Back to Members</a>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Genre</th>
+        <th>Status</th>
+        <th>Borrowed by</th>
+        <th>Return</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="b : ${books}">
+        <td th:text="${b.id}"></td>
+        <td th:text="${b.title}"></td>
+        <td th:text="${b.author}"></td>
+        <td th:text="${b.genre}"></td>
+        <td th:text="${b.available} ? 'Available' : 'Borrowed'"></td>
+        <td th:text="${b.borrowedBy != null ? b.borrowedBy.fullName : '-'}"></td>
+        <td>
+            <form th:if="${!b.available}" th:action="@{/books/return}" method="post">
+                <input type="hidden" name="bookId" th:value="${b.id}" />
+                <button type="submit">Return</button>
+            </form>
+            <span th:if="${b.available}">—</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
