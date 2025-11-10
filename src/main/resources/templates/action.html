@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Member Action</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f8f5f0;
+            margin: 40px;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #3b5c3b;
+        }
+
+        .nav {
+            margin-bottom: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            background-color: #3b5c3b;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            margin-right: 8px;
+        }
+
+        .nav a:hover {
+            background-color: #507f50;
+        }
+
+        .grid {
+            display: grid;
+            gap: 30px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e7efe7;
+            color: #2f4f2f;
+        }
+
+        tr:hover {
+            background-color: #f3f9f3;
+        }
+
+        button {
+            background-color: #3b5c3b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #507f50;
+        }
+
+        td[colspan] {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <a th:href="@{/members}">← Back to Members</a>
+    <a th:href="@{/books}">📚 Books</a>
+</div>
+
+<h1 th:text="'Actions for: ' + ${member.fullName}"></h1>
+
+<div class="grid">
+    <!-- Left: Borrowed books -->
+    <section>
+        <h2>Borrowed Books</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th><th>Title</th><th>Author</th><th>Return</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${borrowedBooks}">
+                <td th:text="${b.id}"></td>
+                <td th:text="${b.title}"></td>
+                <td th:text="${b.author}"></td>
+                <td>
+                    <form th:action="@{/books/return}" method="post">
+                        <input type="hidden" name="bookId" th:value="${b.id}" />
+                        <input type="hidden" name="memberId" th:value="${member.id}" />
+                        <button type="submit">Return</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(borrowedBooks)}">
+                <td colspan="4">No books borrowed.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Right: Available books -->
+    <section>
+        <h2>Available Books</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th><th>Title</th><th>Author</th><th>Borrow</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${availableBooks}">
+                <td th:text="${b.id}"></td>
+                <td th:text="${b.title}"></td>
+                <td th:text="${b.author}"></td>
+                <td>
+                    <form th:action="@{/members/action/borrow}" method="post">
+                        <input type="hidden" name="memberId" th:value="${member.id}" />
+                        <input type="hidden" name="bookId" th:value="${b.id}" />
+                        <button type="submit">Borrow</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(availableBooks)}">
+                <td colspan="4">No available books.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+</body>
+</html>
