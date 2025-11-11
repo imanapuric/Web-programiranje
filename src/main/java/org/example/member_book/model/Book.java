@@ -1,17 +1,25 @@
 package org.example.member_book.model;
 
+import jakarta.persistence.*;
+
+@Entity
 public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
     private String author;
     private String genre;
 
-    // status posudbe
     private boolean available = true;
+
+    @ManyToOne
     private Member borrowedBy; // može biti null
 
-    // opcionalno: pripadnost kategoriji (novi model C)
-    private Category category;
+    @ManyToOne
+    private Category category; // novi model C
 
     public Book() {}
 
@@ -40,7 +48,7 @@ public class Book {
     public void setBorrowedBy(Member borrowedBy) { this.borrowedBy = borrowedBy; }
     public void setCategory(Category category) { this.category = category; }
 
-    // --- helper metode (jednostavno kao kod nje) ---
+    // --- helper metode ---
     public boolean canBorrow() { return available; }
 
     public boolean borrow(Member m) {
