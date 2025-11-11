@@ -1,99 +1,56 @@
 package org.example.member_book.data;
 
-import org.springframework.stereotype.Component;
-import org.example.member_book.model.Member;
+import jakarta.annotation.PostConstruct;
 import org.example.member_book.model.Book;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import org.example.member_book.model.Category;
+import org.example.member_book.model.Member;
+import org.example.member_book.repository.BookRepository;
+import org.example.member_book.repository.CategoryRepository;
+import org.example.member_book.repository.MemberRepository;
+import org.springframework.stereotype.Component;
 
 @Component
 public class DemoData {
 
-    private final Map<Long, Member> members = new LinkedHashMap<>();
-    private final Map<Long, Book> books   = new LinkedHashMap<>();
+    private final MemberRepository members;
+    private final BookRepository books;
+    private final CategoryRepository categories;
 
-    private long memberSeq = 1;
-    private long bookSeq   = 100;
-
-    public DemoData() {
-        // ==== Seed members ====
-        saveMember(new Member(null, "Amina Subašić", "amina@example.com", "REGULAR", 2023));
-        saveMember(new Member(null, "Imana Purić",   "imana@example.com",  "PREMIUM", 2024));
-        saveMember(new Member(null, "Adna Kargić",  "adna@example.com", "REGULAR", 2022));
-
-        // ==== Seed books (početno slobodne) ====
-        saveBook(new Book(null, "Na Drini ćuprija", "Ivo Andrić",        "Roman",  true));
-        saveBook(new Book(null, "Prokleta avlija",  "Ivo Andrić",        "Roman",  true));
-        saveBook(new Book(null, "Zločin i kazna",   "F. M. Dostojevski", "Klasik", true));
-        saveBook(new Book(null, "Legenda o Ali-paši",       "Enver Čolaković",      "Roman",     true));
+    public DemoData(MemberRepository members, BookRepository books, CategoryRepository categories) {
+        this.members = members;
+        this.books = books;
+        this.categories = categories;
     }
 
-    // ==================== MEMBERS ====================
-    public List<Member> findAllMembers() {
-        return new ArrayList<>(members.values());
-    }
+    @PostConstruct
+    public void loadData() {
+        if (members.count() == 0 && books.count() == 0 && categories.count() == 0) {
+            // Kategorije
+            var roman = categories.save(new Category(null, "Roman", "#f5e0e9"));
+            var nauka = categories.save(new Category(null, "Nauka", "#d8f3dc"));
+            var istorija = categories.save(new Category(null, "Historija", "#ffe5b4"));
 
-    //To radi pronalaženje člana po ID-ju u memorijskoj mapi i vraća ga “upakovano” u Optional
-    public Optional<Member> findMemberById(Long id) {
-        return Optional.ofNullable(members.get(id));
-    }
+            // Članovi
+            var m1 = members.save(new Member(null, "Amina Subašić", "amina@example.com", "REGULAR", 2023));
+            var m2 = members.save(new Member(null, "Imana Purić", "imana@example.com", "PREMIUM", 2024));
+            var m3 = members.save(new Member(null, "Adna Kargić", "adna@example.com", "REGULAR", 2022));
 
-    public Member saveMember(Member m) {
-        if (m.getId() == null) m.setId(memberSeq++);
-        members.put(m.getId(), m);
-        return m;
-    }
+            // Knjige
+            var b1 = new Book(null, "Na Drini ćuprija", "Ivo Andrić", "Roman");
+            b1.setCategory(roman);
+            books.save(b1);
 
-    // ===================== BOOKS =====================
-    public List<Book> findAllBooks() {
-        return new ArrayList<>(books.values());
-    }
+            var b2 = new Book(null, "Prokleta avlija", "Ivo Andrić", "Roman");
+            b2.setCategory(roman);
+            books.save(b2);
 
-    public Optional<Book> findBookById(Long id) {
-        return Optional.ofNullable(books.get(id));
-    }
+            var b3 = new Book(null, "Kratka historija vremena", "Stephen Hawking", "Nauka");
+            b3.setCategory(nauka);
+            books.save(b3);
 
-    public Book saveBook(Book b) {
-        if (b.getId() == null) b.setId(bookSeq++);
-        books.put(b.getId(), b);
-        return b;
-    }
-
-    // ======= Relacija / upiti =========
-    public List<Book> availableBooks() {
-        return books.values().stream().filter(Book::isAvailable).collect(Collectors.toList());
-    }
-
-    public List<Book> findBooksBorrowedBy(Long memberId) {
-        return books.values().stream()
-                .filter(b -> b.getBorrowedBy() != null && Objects.equals(b.getBorrowedBy().getId(), memberId))
-                .collect(Collectors.toList());
-    }
-
-    // ============= Akcije (borrow/return) =============
-    public boolean borrowBook(Long memberId, Long bookId) {
-        var mOpt = findMemberById(memberId);
-        var bOpt = findBookById(bookId);
-        if (mOpt.isEmpty() || bOpt.isEmpty()) return false;
-
-        Book book = bOpt.get();
-        if (!book.isAvailable()) return false; // već posuđena
-
-        book.setAvailable(false);
-        book.setBorrowedBy(mOpt.get());
-        return true;
-    }
-
-    public boolean returnBook(Long bookId) {
-        var bOpt = findBookById(bookId);
-        if (bOpt.isEmpty()) return false;
-
-        Book book = bOpt.get();
-        if (book.isAvailable()) return false; // već je slobodna
-
-        book.setBorrowedBy(null);
-        book.setAvailable(true);
-        return true;
+            var b4 = new Book(null, "Bosna kroz vijekove", "Mustafa Imamović", "Historija");
+            b4.setCategory(istorija);
+            books.save(b4);
+        }
     }
 }
